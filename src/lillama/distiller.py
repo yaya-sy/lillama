@@ -41,10 +41,6 @@ class Distiller(nn.Module):
         self.student = student
         self.activations = None
         self.optimizer = torch.optim.AdamW(self.student.parameters(), lr=config.lr)
-        # self.scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer=self.optimizer,
-        #                                                             mode="min",
-        #                                                             factor=0.1,
-        #                                                             patience=1)
         self.current_loss_with_student = float("Inf")
         self.current_loss_with_teacher = float("Inf")
         self.best_loss_with_student = float("Inf")
@@ -52,25 +48,12 @@ class Distiller(nn.Module):
         self.student_losses = []
         self.teacher_losses = []
         self.logger = logger
-        self.t = 2
 
     def l1_cos(self, inputs: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
         l1 = l1_loss(input=inputs, target=targets, reduction="none").mean(-1)
         cos = sigmoid(cosine_similarity(inputs, targets, dim=-1)).log()
         # minus because we maximize the cosine similarity
         return (l1 - cos).mean()
-    
-    def kld_loss(self, student_hidden, teacher_hidden):
-        student_probs = F.log_softmax(student_hidden / self.t, dim=-1)
-        teacher_probs = F.softmax(teacher_hidden / self.t, dim=-1)
-
-        loss_kd = F.kl_div(
-            student_probs,
-            teacher_probs,
-            reduction='batchmean'
-        ) * (self.t ** 2)
-
-        return loss_kd
 
     def save_losses(self, tokens: list):
         """Save the losses."""
@@ -99,7 +82,7 @@ class Distiller(nn.Module):
         self.logger(f"INPUT ACTIVATIONS={key}, LAYER={self.name}, LOSS={loss}, LR={self.optimizer.param_groups[0]['lr']}")
 
     def detach(self, *args, **kwargs):
-        """Detach the tensors so backward will only concern the student module."""
+        """Detach the tensors, as the distillation is local, the gradient is computed locally."""
         nargs = ()
         for x in args:
             nargs += (x.detach(),)
@@ -111,7 +94,7 @@ class Distiller(nn.Module):
 
     def update_from_student_activations(self, a: torch.Tensor) -> None:
         """
-        When the inputs of the stydent come from the previous student layer.
+        When the inputs of the student come from the previous student layer.
         
         Parameters
         ----------
@@ -165,7 +148,6 @@ class Distiller(nn.Module):
         a = o[0] if isinstance(o, tuple) else o
         if self.training:
             self.update_from_student_activations(a)
-            # self.scheduler.step(self.current_loss_with_student)
         return o
 
     def forward(self, *args, **kwargs):
@@ -207,7 +189,6 @@ def set_distillers(llm: nn.Module,
                    logger: logging=logging.info):
     layers = get_named_layers(llm)
     total = sum(1 for _ in layers)
-    print("$$$$$$$$$$", c_layers)
     for name, module in tqdm(layers, total=total):
         layer = re.search(r'\d+', name).group()
         if int(layer) < ignore_first_layers:
@@ -215,11 +196,10 @@ def set_distillers(llm: nn.Module,
         if int(layer) not in c_layers:
             logger(f"{name} will not be distilled.")
             if strategy in {"top", "uniform"}:
-                print(name)
-                # don't do Identy when the top layers will be compressed as we will need to forward
+                # No Identy() when the top layers will be compressed as we will need to forward
                 # through them. Same for uniform.
                 continue
-            # if bottom, then we can stop the forward earlier
+            # if bottom, then we can stop the forward earlier, so we can use the Identy() module to save computation.
             free_layer = IdentyWhenTraining(module)
             setattr(lr_llm, name, free_layer)
             setattr(llm, name, free_layer)
