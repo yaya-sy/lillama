@@ -1,14 +1,10 @@
 from ..utils import setmodule
-from .pca_init import activation_pca
 from typing import Optional
 from math import sqrt
 from tqdm import tqdm
 import torch
 from torch import nn
-from typing import Set
 import torch
-from torch import Tensor
-from datasets import Dataset
 
 class LowRankLinear(nn.Module):
     """Low Rank linear of a base Full Rank linear."""
@@ -19,7 +15,6 @@ class LowRankLinear(nn.Module):
                  d_model: Optional[int]=None,
                  init_method: str="svd",
                  W: torch.Tensor=None,
-                 E: torch.Tensor=None,
                  device: torch.device=torch.device("cpu"),
                  dtype=torch.bfloat16
                  ):
@@ -62,18 +57,6 @@ class LowRankLinear(nn.Module):
             w2 = w2.to(self.dtype)
         self.linear[0].weight = torch.nn.Parameter(w2.contiguous())
         self.linear[1].weight = torch.nn.Parameter(w1.contiguous())
-
-    @torch.no_grad()
-    def _init_pca(self, E: torch.Tensor, W: torch.Tensor, r: int):
-        """Init weight with pca."""
-        w1 = E[:, :r].T @ W
-        w2 = E[:, :r]
-        print(W.shape, w1.shape, w2.shape)
-        if self.dtype is not None:
-            w1 = w1.to(self.dtype)
-            w2 = w2.to(self.dtype)
-        self.linear[0].weight = torch.nn.Parameter(w1.contiguous())
-        self.linear[1].weight = torch.nn.Parameter(w2.contiguous())
 
 def lowrank_llm_random(llm: nn.Module, d_model, config: dict, dtype=torch.bfloat16):
     """
@@ -123,34 +106,6 @@ def lowrank_llm_svd(llm: nn.Module, config: dict, dtype=torch.bfloat16):
                                            rank=rank,
                                            out_features=module.out_features,
                                            init_method="svd",
-                                           W=module.weight,
-                                           device=device,
-                                           dtype=dtype)
-            setmodule(llm, name, lowrank_linear.linear)
-
-def lowrank_llm_pca(llm: nn.Module, config: dict, eigenvalues, dtype=torch.bfloat16):
-    """
-    Low-Rank a given LLM.
-
-    Parameters
-    ----------
-    - llm: nn.Module
-        The LLM to lowrank.
-    - config: dict
-        A dictionary containing the rank value of each linear module in the LLM.
-    """
-    total = sum(1 for _ in llm.named_modules())
-    for name, module in tqdm(llm.named_modules(), total=total):
-        if name in config:
-            rank = config[name]
-            # because in the case of svd_init, cpu weights will be replace by low-rank cuda weights
-            device = torch.device("cpu")
-            E = eigenvalues[name]
-            lowrank_linear = LowRankLinear(in_features=module.in_features,
-                                           rank=rank,
-                                           out_features=module.out_features,
-                                           init_method="pca",
-                                           E=E,
                                            W=module.weight,
                                            device=device,
                                            dtype=dtype)

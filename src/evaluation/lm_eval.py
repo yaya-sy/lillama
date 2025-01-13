@@ -20,14 +20,7 @@ TASK_METRIC_MAP = {
     "winogrande": "acc,none",
     "boolq": "acc,none",
     "openbookqa": "acc_norm,none",
-    "mmlu": "acc,none"
 }
-
-# TASK_METRIC_MAP = {
-#     "mmlu": "acc,none"
-# }
-
-# "mmlu": "acc_norm,none", # gms8k too long because it's a generate_unitl task
 
 def get_llm(checkpoint, distill_path=None):
     if distill_path is not None:
@@ -103,10 +96,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-# phi-1.7b: 56.54
-# smolm-1.7b: 61.47
-# stablelm-2-1.6: 61.42
-# Qwen-1.8b: 
-# gemma-2.5b: 

@@ -1,7 +1,5 @@
 """we use the same ppl evaluation in the Wanda paper: https://github.com/locuslab/wanda/blob/main/lib/eval.py#L83"""
 # from .load_lr_llm import load_lr_llm
-from ..utils import load_llm
-from transformers import AutoTokenizer
 from tqdm import tqdm
 import torch
 import numpy as np

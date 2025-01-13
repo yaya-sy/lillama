@@ -49,7 +49,7 @@ from transformers.utils import (
     replace_return_docstrings,
 )
 from transformers.utils.import_utils import is_torch_fx_available
-from .configuration_mixtral import MixtralConfig
+from .configuration_low_rank_mixtral import MixtralConfig
 
 
 if is_flash_attn_2_available():

@@ -1,11 +1,12 @@
 from .lowrank_llm import lowrank_llm
 from .distiller import prepare_for_distillation, unset_distillers, set_distilled_layers_to_llm, Distiller
 from .search_ranks import RankSearcher
-# from ..evaluation.lm_eval_harness import eval_main
+from ..evaluation.lm_eval import evaluate
 from ..utils import load_llm, freeze_llm, crop_llm, save_distilled_llm
 from .train import train
 from .config import DistillationParams
 from ..data.dataiterator import DataIterator, Collator
+import json
 import logging
 from argparse import ArgumentParser, BooleanOptionalAction
 from pathlib import Path
@@ -141,7 +142,6 @@ def main():
                                  strategy=args.strategy,
                                  reduction=args.reduction)
     num_layers, layers = rank_searcher.get_num_layers()
-    print("&&&&&&&&&", layers)
     rank_searcher.save_config(Path(args.output_folder))
 
     # load smaller LLMs
@@ -189,22 +189,25 @@ def main():
     unset_distillers(llm) # remove distiller modules from the llm
     load_best_model(lr_llm) # load the best student module
     set_distilled_layers_to_llm(lr_llm, llm) # transfer distilled layer to the base llm
-    LOGGER.info(f"Total number of parameters '{args.output_folder}/distilled_llm'...")
-    # LOGGER.info(f"Saving distilled llm to '{args.output_folder}/distilled_llm'...")
-    # save_distilled_llm(lr_llm=llm, lr_llm_config=rank_searcher.config, output_folder=f"{args.output_folder}/distilled_llm")
+    LOGGER.info(f"Saving distilled llm to '{args.output_folder}/lowrank_llm'...")
+    save_distilled_llm(lr_llm=llm, lr_llm_config=rank_searcher.config, output_folder=f"{args.output_folder}/lowrank_llm")
 
     # evaluate
-    # if args.evaluate:
-    #     eval_dir = Path(args.output_folder) / "evaluation_results"
-    #     eval_dir.mkdir(exist_ok=True, parents=True)
-    #     LOGGER.info("Evaluation...")
-    #     unset_distillers(lr_llm)
-    #     eval_main(
-    #         llm=lr_llm,
-    #         tokenizer=tokenizer,
-    #         save_dir=eval_dir,
-    #         batch_size=args.batch_size
-    #     )
+    if args.evaluate:
+        eval_dir = Path(args.output_folder) / "evaluation_results"
+        eval_dir.mkdir(exist_ok=True, parents=True)
+        LOGGER.info("Evaluation...")
+        unset_distillers(lr_llm)
+        results, tasks_score = evaluate(
+            llm=lr_llm,
+            tokenizer=tokenizer,
+        )
+        LOGGER.info(f"Saving results to {eval_dir}.")
+        with open(f"{args.output_folder}/full_results_0_shot.json", "w") as f:
+            json.dump(results, f)
+        with open(f"{args.output_folder}/0_shot_task_results.json", "w") as f:
+            json.dump(tasks_score, f)
+
 if __name__ == "__main__":
     main()
 

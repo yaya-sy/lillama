@@ -1,6 +1,6 @@
 import os
 from ..evaluation.load_lr_llm import load_lr_llm
-from ..evaluation.custom import evaluate
+from ..evaluation.lm_eval import evaluate
 from pathlib import Path
 from datasets import load_dataset
 from trl import setup_chat_format, SFTTrainer
