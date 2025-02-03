@@ -2,6 +2,11 @@ from argparse import ArgumentParser
 
 def parse_args():
     parser = ArgumentParser(description="Module for preparing data from a data in the format ShareGPT.")
+    parser.add_argument("-f", "--format",
+                        help="The type of the dataset to process.",
+                        type=str,
+                        default="sharegpt",
+                        required=False)
     parser.add_argument("-d", "--dataset",
                         help="The local or remote path to the huggingface dataset.",
                         type=str,

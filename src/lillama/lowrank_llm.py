@@ -1,10 +1,21 @@
-from ..utils import setmodule
 from typing import Optional
 from math import sqrt
 from tqdm import tqdm
 import torch
 from torch import nn
 import torch
+
+def setmodule(module: nn.Module, target_module: str, value: nn.Module):
+    """Set a target module from in a given module."""
+    submodules = target_module.split(".", 1)
+    if len(submodules) == 1:
+        if submodules[0].isdigit():
+            module[int(submodules[0])] = value
+        else:
+            setattr(module, submodules[0], value)
+    else:
+        setmodule(getattr(module, submodules[0]), submodules[-1], value)
+
 
 class LowRankLinear(nn.Module):
     """Low Rank linear of a base Full Rank linear."""

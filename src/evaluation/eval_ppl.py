@@ -1,5 +1,4 @@
 """we use the same ppl evaluation in the Wanda paper: https://github.com/locuslab/wanda/blob/main/lib/eval.py#L83"""
-# from .load_lr_llm import load_lr_llm
 from tqdm import tqdm
 import torch
 import numpy as np

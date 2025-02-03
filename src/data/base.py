@@ -1,6 +1,5 @@
-from typing import List, Optional
+from typing import Optional
 from pathlib import Path
-from itertools import chain
 import os
 import logging
 from abc import ABC, abstractmethod

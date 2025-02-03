@@ -1,4 +1,4 @@
-from .eval_ppl import get_loaders, ppl_eval
+from .eval_ppl import get_loaders
 from ..lillama.lowrank_llm import lowrank_llm
 import json
 import logging
@@ -9,7 +9,6 @@ from argparse import ArgumentParser
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
 from tqdm import tqdm
-from torch.utils.data import DataLoader
 
 def parse_args():
     parser = ArgumentParser()

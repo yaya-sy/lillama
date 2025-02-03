@@ -4,8 +4,6 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel
 import torch
 from datasets import load_dataset
 from torch.utils.data.dataset import Dataset
-import numpy as np
-from torch.nn.functional import normalize
 from pandas import DataFrame
 
 class IndexDataset(Dataset):

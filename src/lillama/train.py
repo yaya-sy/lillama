@@ -1,4 +1,3 @@
-from ..data.dataiterator import DataIterator, Collator
 from .distiller import Distiller
 from .config import DistillationParams
 from ..evaluation.eval_ppl import get_loaders, ppl_eval

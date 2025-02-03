@@ -1,5 +1,4 @@
-from .load_lr_llm import load_lr_llm
-from ..utils import load_llm
+from ..utils import load_lr_llm, load_llm
 from pathlib import Path
 import json
 from argparse import ArgumentParser
@@ -8,6 +7,8 @@ import lm_eval
 from lm_eval.models.huggingface import HFLM
 from lm_eval.utils import make_table
 import logging
+
+# lm_eval==0.4.4
 
 TASK_METRIC_MAP = {
     "arc_challenge": "acc_norm,none",

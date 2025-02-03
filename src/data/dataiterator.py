@@ -1,6 +1,5 @@
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader
-from copy import deepcopy
 
 class Collator:
     def __init__(self, pad_token_id):

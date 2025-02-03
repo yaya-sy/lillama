@@ -8,7 +8,6 @@ from tqdm import tqdm
 import torch
 from torch import nn
 from torch.nn.functional import cosine_similarity, sigmoid, l1_loss
-import torch.nn.functional as F
 
 class IdentyWhenTraining(nn.Module):
     """A forward without computation for non distillable modules."""
