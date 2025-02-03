@@ -12,4 +12,3 @@ mamba-ssm==2.2.2
 torch==2.4.0
 tqdm==4.66.5
 transformers==4.45.2
-trl==0.9.6
