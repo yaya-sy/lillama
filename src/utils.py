@@ -4,7 +4,7 @@ import torch
 from torch import nn
 from transformers import AutoModelForCausalLM, PreTrainedModel, AutoTokenizer, AutoConfig
 import logging
-from lillama.lowrank_llm import lowrank_llm
+from .lillama.lowrank_llm import lowrank_llm
 import logging
 import json
 from pathlib import Path
@@ -19,9 +19,13 @@ def load_llm(checkpoint: str,
     if num_hidden_layers is None:
         config = AutoConfig.from_pretrained(checkpoint, trust_remote_code=True)
         num_hidden_layers = config.num_hidden_layers
+    if torch_dtype in {torch.bfloat16, torch.float16, None} and torch.cuda.get_device_capability()[0] >= 8:
+        attn_implementation = "flash_attention_2"
+    else:
+        attn_implementation = "sdpa"
     return AutoModelForCausalLM.from_pretrained(checkpoint,
                                                 num_hidden_layers=num_hidden_layers,
-                                                # attn_implementation="flash_attention_2" if torch_dtype in {torch.bfloat16, torch.float16, None} else "sdpa",
+                                                attn_implementation=attn_implementation,
                                                 device_map=device_map,
                                                 max_memory=max_memory,
                                                 torch_dtype=torch.bfloat16 if torch_dtype is None else torch_dtype,

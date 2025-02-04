@@ -1,0 +1,25 @@
+[project]
+name = "lillama"
+version = "0.1.0"
+description = ""
+authors = [{name = "Yaya Sy", email = "yayasysco@gmail.com"}]
+license = {text = "MIT"}
+requires-python = ">=3.8"
+classifiers = [
+   "Development Status :: 3 - Alpha",
+   "License :: OSI Approved :: MIT License",
+   "Programming Language :: Python :: 3.8",
+   "Programming Language :: Python :: 3.9"
+]
+
+[tool.setuptools]
+packages = ["src"]
+
+[project.scripts]
+lillama-sharegpt = "src.data.sharegpt:main"
+lillama-alpaca = "src.data.alpaca:main"
+lillama-distill = "src.lillama.main:main"
+
+[build-system]
+requires = ["setuptools>=64.0"]
+build-backend = "setuptools.build_meta"

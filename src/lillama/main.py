@@ -2,7 +2,7 @@ from .lowrank_llm import lowrank_llm
 from .distiller import prepare_for_distillation, unset_distillers, set_distilled_layers_to_llm, Distiller
 from .search_ranks import RankSearcher
 from ..evaluation.lm_eval import evaluate
-from ..utils import load_llm, freeze_llm, crop_llm, save_distilled_llm
+from ..utils import load_llm, freeze_llm, crop_llm, save_distilled_llm, linear_iterator
 from .train import train
 from .config import DistillationParams
 from ..data.dataiterator import DataIterator, Collator
@@ -33,12 +33,12 @@ def parse_args():
                         type=str)
     parser.add_argument("-l", "--llm",
                         help="The LLM to distill.",
-                        default=None,
+                        default="None",
                         required=True,
                         type=str)
     parser.add_argument("-b", "--batch-size",
                         help="The batch size for training and evaluation.",
-                        default=32,
+                        default=8,
                         type=int)
     parser.add_argument("-r", "--lr",
                         help="The learning rate for the training.",
@@ -67,7 +67,7 @@ def parse_args():
     parser.add_argument("-m", "--target-weights",
                         help="Only compress these weights.",
                         nargs="+",
-                        default=["down_proj", "gate_proj", "up_proj", "q_proj", "k_proj", "v_proj", "o_proj"]
+                        default="all-linear"
                         )
     parser.add_argument("-k", "--min-rank",
                         help="The minimum rank for possible ranks of the weights of the matrices in the LLM.",
@@ -129,6 +129,9 @@ def main():
     # load base model
     llm = load_llm(checkpoint=args.llm, device_map="cpu")
     print(llm)
+    if args.target_weights == "all-linear" or args.target_weights is None:
+        args.target_weights = list(set([name.split(".")[-1] for name, _ in linear_iterator(llm)]))
+        LOGGER.info(f"Target weights: {args.target_weights}")
     base_num_params = sum(int(p.nelement()) for p in llm.parameters())
     LOGGER.info(f'Number of parameters of the Base LLM: {base_num_params:,}')
     freeze_llm(llm)

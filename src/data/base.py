@@ -39,7 +39,7 @@ class BaseData(ABC):
             batched=True,
             batch_size=self.batch_size,
             remove_columns=remove_columns,
-            desc="Running tokenizer on the dataset.",
+            desc="Tokenizing the dataset.",
         )
         return tokenized_dataset
 
