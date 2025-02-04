@@ -4,6 +4,8 @@ import torch
 import numpy as np
 from datasets import load_dataset
 from torch.utils.data.dataset import Dataset
+import argparse
+from transformers import AutoModelForCausalLM
 
 class IndexDataset(Dataset):
     def __init__(self, tensors):
@@ -49,6 +51,21 @@ def ppl_eval(model, test_loader, device):
         nlls.append(loss)
     ppl = np.exp(torch.cat(nlls, dim=-1).mean().item())
     return ppl.item()
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--llm", type=str, required=True)
+    parser.add_argument("--lowrank-weights", type=str, required=False, default=None)
+
+    args = parser.parse_args()
+
+    model = AutoModelForCausalLM.from_pretrained(args.llm, torch_dtype=torch.bfloat16).cuda()
+    model.to(args.device)
+
+    test_loader = get_loaders(model, seq_len=1024, batch_size=4)
+    ppl = ppl_eval(model, test_loader, args.device)
+    print(f"PPL: {ppl}")
+
 
 if __name__ == "__main__":
     pass
