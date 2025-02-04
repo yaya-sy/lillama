@@ -14,11 +14,11 @@ classifiers = [
 
 [tool.setuptools]
 package-dir = {"lillama" = "src"}
-packages = ["lillama"]
+packages = ["lillama", "lillama.data", "lillama.evaluation", "lillama.lillama"]
 
 [project.scripts]
-lillama-sharegpt = "lillama.sharegpt:main"
-lillama-alpaca = "lillama.alpaca:main"
+lillama-sharegpt = "lillama.data.sharegpt:main"
+lillama-alpaca = "lillama.data.alpaca:main"
 lillama-distill = "lillama.lillama.main:main"
 
 [build-system]
