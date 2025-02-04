@@ -1,5 +1,5 @@
 from argparse import ArgumentParser
-
+import os
 def parse_args():
     parser = ArgumentParser(description="Module for preparing data from a data in the format ShareGPT.")
     parser.add_argument("-d", "--dataset",
@@ -35,7 +35,7 @@ def parse_args():
     parser.add_argument("-p", "--num_proc",
                         help="The number of parallel processes.",
                         type=int,
-                        default=64,
+                        default=os.cpu_count(),
                         required=False)
     parser.add_argument("-o", "--output-folder",
                         help="Where the output folder will be stored.",
