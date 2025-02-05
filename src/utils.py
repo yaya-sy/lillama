@@ -138,4 +138,5 @@ def save_lr_llm(distill_path, checkpoint, output_folder):
     lr_llm.generation_config.temperature = None
     lr_llm.generation_config.top_p = None
     lr_llm.config.ranks = lr_config
+    lr_llm.config._name_or_path = output_folder
     lr_llm.save_pretrained(output_folder)
