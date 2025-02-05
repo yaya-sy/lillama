@@ -133,8 +133,9 @@ def load_lr_llm(distill_path, checkpoint, device=None, logger=logging.info):
 
 def save_lr_llm(distill_path, checkpoint, output_folder):
     _, lr_llm, lr_config = load_lr_llm(distill_path, checkpoint)
+    AutoTokenizer.from_pretrained(checkpoint).save_pretrained(output_folder)
+
     lr_llm.generation_config.temperature = None
     lr_llm.generation_config.top_p = None
-    lr_llm.config.architectures = [f"LowRank{lr_llm.config.architectures[0]}"]
     lr_llm.config.ranks = lr_config
     lr_llm.save_pretrained(output_folder)
