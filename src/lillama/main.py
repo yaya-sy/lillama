@@ -13,9 +13,15 @@ from pathlib import Path
 from transformers import AutoTokenizer
 from datasets import load_from_disk
 
+# Set up a root logger with WARNING level (this affects all loggers by default)
+logging.basicConfig(
+    level=logging.WARNING,  # This will affect all loggers that aren't explicitly set
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
 
+# Set up your specific logger with DEBUG level
 LOGGER = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
+LOGGER.setLevel(logging.DEBUG)
 
 def parse_args():
     parser = ArgumentParser()

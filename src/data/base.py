@@ -58,14 +58,14 @@ class BaseData(ABC):
             total_tokens += len(item["input_ids"])
             idx += 1
 
-    def sort_by_length(self, dataset: Dataset) -> Dataset:
+    def sort_by_length(self, dataset: Dataset, logger=LOGGER.info) -> Dataset:
         lengths = dataset.map(lambda batch: {"length": [len(input_ids) for input_ids in batch]},
                                 input_columns="input_ids",
                                 batched=True,
                                 batch_size=self.batch_size,
                                 desc="Computing the lengths.")
         lengths = lengths.shard(1, 0, contiguous=True)
-        print("Sorting the data")
+        logger("Sorting the data...")
         return lengths.sort("length", reverse=True)
     
     def split_train_test_dev(self, dataset: Dataset):

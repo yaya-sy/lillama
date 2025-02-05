@@ -5,8 +5,15 @@ import os
 from dataclasses import dataclass
 from datasets import Dataset
 
+# Set up a root logger with WARNING level (this affects all loggers by default)
+logging.basicConfig(
+    level=logging.WARNING,  # This will affect all loggers that aren't explicitly set
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+# Set up your specific logger with DEBUG level
 LOGGER = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
+LOGGER.setLevel(logging.DEBUG)
 
 @dataclass
 class ShareGPT(BaseData):
@@ -47,7 +54,7 @@ class ShareGPT(BaseData):
                                     num_process=self.num_proc)
         dataset = self.tokenize_dataset(dataset=dataset)
         dataset = self.subset(dataset, logger=LOGGER.info)
-        train = self.sort_by_length(dataset)
+        train = self.sort_by_length(dataset, logger=LOGGER.info)
         return train
 
 def main():

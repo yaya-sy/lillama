@@ -7,8 +7,15 @@ from datasets import Dataset
 import torch
 from torch import nn
 
+# Set up a root logger with WARNING level (this affects all loggers by default)
+logging.basicConfig(
+    level=logging.WARNING,  # This will affect all loggers that aren't explicitly set
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+# Set up your specific logger with DEBUG level
 LOGGER = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
+LOGGER.setLevel(logging.DEBUG)
 
 def save_losses(lr_llm, tokens):
     for _, module in lr_llm.named_modules():

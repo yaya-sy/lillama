@@ -8,10 +8,15 @@ from lm_eval.models.huggingface import HFLM
 from lm_eval.utils import make_table
 import logging
 
+# Set up a root logger with WARNING level (this affects all loggers by default)
+logging.basicConfig(
+    level=logging.WARNING,  # This will affect all loggers that aren't explicitly set
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+# Set up your specific logger with DEBUG level
 LOGGER = logging.getLogger(__name__)
-logging.basicConfig(level=logging.DEBUG)
-
-
+LOGGER.setLevel(logging.DEBUG)
 
 TASK_METRIC_MAP = {
     "arc_challenge": "acc_norm,none",
@@ -33,7 +38,7 @@ def get_llm(checkpoint, distill_path=None):
         llm = load_llm(checkpoint, device_map="auto")
     tokenizer = AutoTokenizer.from_pretrained(checkpoint, trust_remote_code=True)
     num_params = sum(int(p.nelement()) for p in llm.parameters())
-    logging.info(f"Number of parameters in the LLM {num_params:,}")
+    LOGGER.info(f"Number of parameters in the LLM {num_params:,}")
     return llm, tokenizer
 
 def parse_args():
@@ -74,7 +79,7 @@ def evaluate(llm, tokenizer, tasks=list(TASK_METRIC_MAP.keys())):
     # average
     tasks_score["average"] = sum(result.get(TASK_METRIC_MAP[task]) for task, result in results.items() if task in tasks) / n_tasks
 
-    logging.info(tasks_score)
+    LOGGER.info(tasks_score)
 
     return results, tasks_score
 
