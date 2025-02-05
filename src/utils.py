@@ -111,10 +111,11 @@ def crop_llm(llm, lr_llm):
     delattr(llm, "lm_head")
     delattr(lr_llm, "lm_head")
 
-def save_distilled_llm(lr_llm, lr_llm_config, output_folder):
-    lr_llm.generation_config.temperature = 1.0
-    lr_llm.generation_config.top_p = 0.9
-    lr_llm.config.ranks = lr_llm_config
+def save_lr_llm(distill_path, checkpoint, output_folder):
+    _, lr_llm, lr_config = load_lr_llm(distill_path, checkpoint)
+    lr_llm.generation_config.temperature = None
+    lr_llm.generation_config.top_p = None
+    lr_llm.config.ranks = lr_config
     lr_llm.save_pretrained(output_folder)
 
 def load_lr_llm(distill_path, checkpoint, device=None, logger=logging.info):
