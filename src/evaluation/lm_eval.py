@@ -8,12 +8,10 @@ from lm_eval.models.huggingface import HFLM
 from lm_eval.utils import make_table
 import logging
 
-# lm_eval==0.4.4
 
 TASK_METRIC_MAP = {
     "arc_challenge": "acc_norm,none",
     "arc_easy": "acc_norm,none",
-    "hellaswag": "acc_norm,none",
     "piqa": "acc_norm,none",
     "social_iqa": "acc,none",
     "logiqa": "acc_norm,none",
@@ -36,7 +34,7 @@ def get_llm(checkpoint, distill_path=None):
 
 def parse_args():
     parser = ArgumentParser(description="Evaluation of compressed or base LLMs.")
-    parser.add_argument("-c", "--checkpoint",
+    parser.add_argument("-l", "--llm",
                         type=str,
                         required=True,
                         help="The base uncompressed LLM.")
@@ -83,7 +81,7 @@ def evaluate(llm, tokenizer, tasks=list(TASK_METRIC_MAP.keys())):
 def main():
     args = parse_args()
 
-    llm, tokenizer = get_llm(checkpoint=args.checkpoint,
+    llm, tokenizer = get_llm(checkpoint=args.llm,
                              distill_path=args.distill_path)
     results, tasks_score = evaluate(llm=llm, tokenizer=tokenizer)
 
