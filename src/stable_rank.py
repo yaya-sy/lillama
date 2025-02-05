@@ -1,7 +1,7 @@
 import re
 from argparse import ArgumentParser
 from pathlib import Path
-from tqdm import tqdm
+from tqdm.auto import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel
 import torch
 from datasets import load_dataset
