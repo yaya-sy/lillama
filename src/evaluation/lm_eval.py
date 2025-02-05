@@ -69,7 +69,6 @@ def evaluate(llm, tokenizer, tasks=list(TASK_METRIC_MAP.keys())):
     results = lm_eval.simple_evaluate( # call simple_evaluate
         model=lm_obj,
         tasks= tasks,
-        trust_remote_code=True,
         task_manager=task_manager)
 
     results = results["results"]
