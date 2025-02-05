@@ -43,10 +43,8 @@ class ShareGPT(BaseData):
                                     num_process=self.num_proc)
         dataset = self.tokenize_dataset(dataset=dataset)
         dataset = self.subset(dataset)
-        train, dev = self.split_train_test_dev(dataset)
-        train = self.sort_by_length(train)
-        dev = self.sort_by_length(dev)
-        return train, dev
+        train = self.sort_by_length(dataset)
+        return train
 
 def main():
     args = parse_args()
@@ -58,9 +56,7 @@ def main():
         max_length=args.max_length,
         num_proc=args.num_proc
         )
-    train, dev = dataloader()
-    train.save_to_disk(f"{args.output_folder}/train")
-    dev.save_to_disk(f"{args.output_folder}/dev")
-
+    train = dataloader()
+    train.save_to_disk(f"{args.output_folder}")
 if __name__ == "__main__":
     main()

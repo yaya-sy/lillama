@@ -46,7 +46,7 @@ def parse_args():
                         type=int)
     parser.add_argument("-g", "--log-interval",
                         help="The interval of updates for logging the progress.",
-                        default=32,
+                        default=512,
                         type=int)
     parser.add_argument("--evaluate",
                         help="Whether evaluate on benchmarks at the end of distillation or not.",
@@ -127,18 +127,18 @@ def main():
                                     collate_fn=Collator(pad_token_id=pad_token_id))
     
     # load base model
-    llm = load_llm(checkpoint=args.llm, device_map="cpu")
-    print(llm)
+    base_llm = load_llm(checkpoint=args.llm, device_map="cpu")
+    print(base_llm)
     if args.target_weights == "all-linear" or args.target_weights is None:
-        args.target_weights = list(set([name.split(".")[-1] for name, _ in linear_iterator(llm)]))
+        args.target_weights = list(set([name.split(".")[-1] for name, _ in linear_iterator(base_llm)]))
         LOGGER.info(f"Target weights: {args.target_weights}")
-    base_num_params = sum(int(p.nelement()) for p in llm.parameters())
+    base_num_params = sum(int(p.nelement()) for p in base_llm.parameters())
     LOGGER.info(f'Number of parameters of the Base LLM: {base_num_params:,}')
-    freeze_llm(llm)
+    freeze_llm(base_llm)
     short_llm = None
 
     # search ranks
-    rank_searcher = RankSearcher(llm=llm,
+    rank_searcher = RankSearcher(llm=base_llm,
                                  min_rank=args.min_rank,
                                  target_weights=args.target_weights,
                                  ignore_first_layers=args.ignore_first_layers,
@@ -154,10 +154,8 @@ def main():
     freeze_llm(lr_llm)
     if not args.evaluate:
         # if evaluate, we crop the base model to have the same number of layers as the student model.
-        short_llm = load_llm(checkpoint=args.llm, device_map="cpu", num_hidden_layers=num_layers)
-        freeze_llm(short_llm)
-        crop_llm(short_llm, lr_llm)
-    base_llm = llm if short_llm is None else short_llm
+        crop_llm(base_llm, lr_llm)
+        freeze_llm(base_llm)
     base_llm = base_llm.cuda()
     lr_llm = lr_llm.cuda()
 
@@ -188,15 +186,12 @@ def main():
           lr_llm=lr_llm,
           distill_params=distill_params)
 
-    # save the distilled LLM
-    unset_distillers(llm) # remove distiller modules from the llm
-    load_best_model(lr_llm) # load the best student module
-    set_distilled_layers_to_llm(lr_llm, llm) # transfer distilled layer to the base llm
-    LOGGER.info(f"Saving distilled llm to '{args.output_folder}/lowrank_llm'...")
-    save_distilled_llm(lr_llm=llm, lr_llm_config=rank_searcher.config, output_folder=f"{args.output_folder}/lowrank_llm")
-
     # evaluate
     if args.evaluate:
+        # save the distilled LLM
+        unset_distillers(base_llm) # remove distiller modules from the llm
+        load_best_model(lr_llm) # load the best student module
+        set_distilled_layers_to_llm(lr_llm, base_llm) # transfer distilled layer to the base llm
         eval_dir = Path(args.output_folder) / "evaluation_results"
         eval_dir.mkdir(exist_ok=True, parents=True)
         LOGGER.info("Evaluation...")

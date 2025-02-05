@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datasets import load_dataset, Dataset
 from transformers import AutoTokenizer
+from tqdm.auto import tqdm
 
 LOGGER = logging
 
@@ -45,16 +46,17 @@ class BaseData(ABC):
 
     def subset(self,
                tokenized_dataset: Dataset,
-               tokens: int=20_000_000) -> Dataset:
+               tokens: int=13_000_000,
+               logger=LOGGER.info) -> Dataset:
         tokenized_dataset = tokenized_dataset.shuffle(48)
         total_tokens = 0
         idx = 0
-        for item in tokenized_dataset:
+        for item in tqdm(tokenized_dataset, desc=f"Keeping only {tokens:,} tokens."):
             if total_tokens >= tokens:
-                break
+                logger(f"Total training tokens: {total_tokens:,}")
+                return tokenized_dataset.select(list(range(idx)))
             total_tokens += len(item["input_ids"])
             idx += 1
-        return tokenized_dataset.select(list(range(idx)))
 
     def sort_by_length(self, dataset: Dataset) -> Dataset:
         lengths = dataset.map(lambda batch: {"length": [len(input_ids) for input_ids in batch]},
