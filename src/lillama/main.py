@@ -2,7 +2,7 @@ from .lowrank_llm import lowrank_llm
 from .distiller import prepare_for_distillation, unset_distillers, set_distilled_layers_to_llm, Distiller
 from .search_ranks import RankSearcher
 from ..evaluation.lm_eval import evaluate
-from ..utils import load_llm, freeze_llm, crop_llm, save_distilled_llm, linear_iterator
+from ..utils import load_llm, freeze_llm, crop_llm, linear_iterator
 from .train import train
 from .config import DistillationParams
 from ..data.dataiterator import DataIterator, Collator
@@ -13,13 +13,6 @@ from pathlib import Path
 from transformers import AutoTokenizer
 from datasets import load_from_disk
 
-import os
-
-tiktoken_cache_dir = "/gpfsscratch/rech/knb/urc37ho/tiktoken/"
-os.environ["TIKTOKEN_CACHE_DIR"] = tiktoken_cache_dir
-
-# validate
-# assert os.path.exists(os.path.join(tiktoken_cache_dir,"9b5ad71b2ce5302211f9c61530b329a4922fc6a4"))
 
 LOGGER = logging.getLogger(__name__)
 logging.basicConfig(level=logging.DEBUG)
@@ -128,7 +121,6 @@ def main():
     
     # load base model
     base_llm = load_llm(checkpoint=args.llm, device_map="cpu")
-    print(base_llm)
     if args.target_weights == "all-linear" or args.target_weights is None:
         args.target_weights = list(set([name.split(".")[-1] for name, _ in linear_iterator(base_llm)]))
         LOGGER.info(f"Target weights: {args.target_weights}")
@@ -165,7 +157,6 @@ def main():
                 d_model=lr_llm.config.hidden_size,
                 config=rank_searcher.config,
                 init_method=args.init_method)
-    print(lr_llm)
     lr_llm_num_params = sum(int(p.nelement()) for n, p in lr_llm.named_parameters())
                             # if "layers" in n)
     percentage = round(lr_llm_num_params / base_num_params * 100, 2)
@@ -179,7 +170,6 @@ def main():
                              strategy=args.strategy,
                              layers=layers,
                              logger=LOGGER.info)
-    print(lr_llm)
     train(train_data=train_dataloader,
           tokenizer=tokenizer,
           llm=base_llm,

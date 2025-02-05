@@ -8,6 +8,10 @@ from lm_eval.models.huggingface import HFLM
 from lm_eval.utils import make_table
 import logging
 
+LOGGER = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
+
+
 
 TASK_METRIC_MAP = {
     "arc_challenge": "acc_norm,none",
@@ -59,12 +63,9 @@ def evaluate(llm, tokenizer, tasks=list(TASK_METRIC_MAP.keys())):
 
     results = lm_eval.simple_evaluate( # call simple_evaluate
         model=lm_obj,
-        tasks= tasks, # ["piqa", "hellaswag", "arc_easy", "arc_challenge", "winogrande", "boolq", "openbookqa"],
-        num_fewshot=0,
+        tasks= tasks,
+        trust_remote_code=True,
         task_manager=task_manager)
-    
-    logging.info(f"Evaluation finished. Results:")
-    print(make_table(result_dict=results))
 
     results = results["results"]
 
@@ -85,7 +86,7 @@ def main():
                              distill_path=args.distill_path)
     results, tasks_score = evaluate(llm=llm, tokenizer=tokenizer)
 
-    logging.info(f"Saving results to {args.output_folder}.")
+    LOGGER.info(f"Saving results to {args.output_folder}.")
     Path(args.output_folder).mkdir(exist_ok=True, parents=True)
 
     with open(f"{args.output_folder}/full_results_0_shot.json", "w") as f:

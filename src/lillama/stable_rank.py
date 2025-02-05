@@ -1,4 +1,6 @@
 import re
+from argparse import ArgumentParser
+from pathlib import Path
 from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer, PreTrainedModel
 import torch
@@ -108,29 +110,46 @@ def weight_rank(llm):
         })
     return results
 
+def parse_args():
+    parser = ArgumentParser()
+    parser.add_argument("-m", "--model-path",
+                        help="Path to the model to analyze",
+                        required=True,
+                        type=str)
+    parser.add_argument("-o", "--output-path",
+                        help="Path to save the results CSV",
+                        required=True,
+                        type=str)
+    return parser.parse_args()
+
 def main():
-    llm = AutoModelForCausalLM.from_pretrained("/lustre/fsn1/projects/rech/knb/urc37ho/models/falcon-mamba")
+    args = parse_args()
+    
+    llm = AutoModelForCausalLM.from_pretrained(args.model_path)
     llm.cuda()
     print(llm)
-    tokenizer = AutoTokenizer.from_pretrained("/lustre/fsn1/projects/rech/knb/urc37ho/models/falcon-mamba",
+    
+    tokenizer = AutoTokenizer.from_pretrained(args.model_path,
                                               trust_remote_code=True)
     test_loader = get_loaders(tokenizer=tokenizer)
+    
     results = []
     hooks, _ = register_forward_hooks(llm)
     forward(llm, test_loader)
+    
     for hook in sorted(hooks, key=lambda x: int(x.name.split(".")[-1])):
         layer = hook.name.split(".")[-1]
         srank = hook.srank / hook.total
         results.append({
-            "Module": "TransformerLayer",
+            "Module": "TransformerLayer", 
             "Layer": int(layer),
             "StableRank": srank.item()
         })
     
     results.extend(weight_rank(llm))
     df = DataFrame(results)
-    print(df)
-    df.to_csv("/lustre/fsn1/projects/rech/knb/urc37ho/stable-ranks/falcon-mamba-7b-cat.csv", index=None)
+    Path(args.output_path).parent.mkdir(exist_ok=True, parents=True)
+    df.to_csv(args.output_path, index=None)
 
 if __name__ == "__main__":
     main()

@@ -31,8 +31,7 @@ def train(train_data: Dataset,
           tokenizer,
           llm: nn.Module,
           lr_llm: nn.Module,
-          distill_params: DistillationParams,
-          subset=None) -> None:
+          distill_params: DistillationParams) -> None:
     """Forwards all the dataset through the LLM and computes the statistics."""
     # base perplexities
     pad_token_id=tokenizer.eos_token_id
@@ -76,8 +75,6 @@ def train(train_data: Dataset,
         
     LOGGER.info("Distillation is finished. Saving the losses.")
     save_losses(lr_llm=lr_llm, tokens=tokens)
-    # with open(f"{distill_params.output_folder}/tokens.txt", "w") as tokens_file:
-    #     tokens_file.write("\n".join(str(n) for n in tokens))
 
     with open(f"{distill_params.output_folder}/perplexities.txt", "w") as ppls_file:
         ppls_file.write("\n".join(f"{t}\t{p}" for t, p in tokens_ppls))

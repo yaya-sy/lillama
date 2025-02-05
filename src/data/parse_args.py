@@ -30,7 +30,7 @@ def parse_args():
     parser.add_argument("-s", "--subset",
                         help="The maximum length of the tokenized text.",
                         type=int,
-                        default=13_000_000, # + 600_000 just for test split
+                        default=13_200_200,
                         required=False)
     parser.add_argument("-p", "--num_proc",
                         help="The number of parallel processes.",

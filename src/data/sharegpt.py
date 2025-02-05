@@ -1,8 +1,12 @@
 from .base import BaseData
 from .parse_args import parse_args
+import logging
 import os
 from dataclasses import dataclass
 from datasets import Dataset
+
+LOGGER = logging.getLogger(__name__)
+logging.basicConfig(level=logging.DEBUG)
 
 @dataclass
 class ShareGPT(BaseData):
@@ -42,7 +46,7 @@ class ShareGPT(BaseData):
                                     batch_size=self.batch_size,
                                     num_process=self.num_proc)
         dataset = self.tokenize_dataset(dataset=dataset)
-        dataset = self.subset(dataset)
+        dataset = self.subset(dataset, logger=LOGGER.info)
         train = self.sort_by_length(dataset)
         return train
 
