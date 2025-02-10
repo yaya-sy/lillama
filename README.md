@@ -22,7 +22,7 @@ Here is an example of how you can compress Phi-2 3B by 20%.
 HF_DATASETS_TRUST_REMOTE_CODE=True lillama-sharegpt \
   --tokenizer microsoft/phi-2 \
   --dataset Open-Orca/SlimOrca \
-  --subset 13_000_00 \
+  --subset 13_000_000 \
   --output-folder distillation-data
 ```
 
