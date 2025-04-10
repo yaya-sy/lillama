@@ -82,7 +82,7 @@ output = lr_pipe("What is the cause of the Civil War? Here is the story:",
                  top_k=10)[0]["generated_text"]
 ```
 
-# Share the compressed with the community on Hugginface
+# Share the compressed model with the community on Hugginface
 
 At the moment the model can only be loaded with `lillama`. To share the model and use it independently, you should modify manually the model file. 
 
