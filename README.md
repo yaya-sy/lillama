@@ -44,7 +44,7 @@ The distilled weights will be saved in `distilled-phi2/checkpoints`.
 
 # Evaluation
 
-## 0-shot evaluation with `lm-eval'
+## 0-shot evaluation with `lm-eval`
 You can evaluate the compressed model as:
 
 ```bash
