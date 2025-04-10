@@ -98,9 +98,6 @@ save_lr_llm(distill_path="distilled-phi2/checkpoints",
 
 This will save compressed model and its config.
 
-Then you have to modify the model file by replacing the linear layers `torch.nn.Linear(input_feature, output_features)` with the low rank ones: `torch.nn.Sequential(torch.nn.Linear(input_feature, rank), torch.nn.Linear(rank, output_features))`. I haven't automatized this, but I've done it for `Mixtral', so you can it as template: https://huggingface.co/yaya-sy/minixtral/blob/main/modeling_mixtral.py
+Then you have to modify the model file by replacing the linear layers `torch.nn.Linear(input_feature, output_features)` with the low rank ones: `torch.nn.Sequential(torch.nn.Linear(input_feature, rank), torch.nn.Linear(rank, output_features))`. I haven't automatized this, but I've done it for `Mixtral`, so you can use it as a template: https://huggingface.co/yaya-sy/minixtral/blob/main/modeling_mixtral.py
 
-You also have to modify he config.json for Transformers `auto_map`. Please se how I achieved this here: https://huggingface.co/yaya-sy/minixtral/blob/main/config.json
-
-
-
+You also have to reference the modeling.py and configuration.py in the config.json for Transformers `auto_map`. Please see how I achieved this here: https://huggingface.co/yaya-sy/minixtral/blob/main/config.json
