@@ -7,7 +7,7 @@
 
 # Installation
 
-If you're working with GPUs of capability < 8.0, you can ignore the flash-attn installation.
+Install the repo with pip
 
 ```bash
 pip install -U git+https://github.com/yaya-sy/lillama.git flash-attn
